@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/animated_list_item.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -7,25 +9,36 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = AppLayout.padding(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+      padding: padding,
+      child: AppLayout.constrainContent(
+        context: context,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Help & Support',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          AnimatedListItem(
+            index: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Help & Support',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Find answers to common questions or get in touch with our team',
-            style: TextStyle(
-              fontSize: 14,
-              color:
-                  isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
+                const SizedBox(height: 4),
+                Text(
+                  'Find answers to common questions or get in touch with our team',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color:
+                        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -130,6 +143,7 @@ class HelpScreen extends StatelessWidget {
           ),
           const SizedBox(height: 40),
         ],
+      ),
       ),
     );
   }

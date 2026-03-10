@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 class MainShell extends StatelessWidget {
@@ -21,56 +22,111 @@ class MainShell extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: child,
+      body: SafeArea(
+        bottom: false, // Bottom is handled by the nav bar + system
+        child: child,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF111827) : Colors.white,
           border: Border(
             top: BorderSide(
               color: isDark
                   ? const Color(0xFF1F2937)
                   : const Color(0xFFE2E8F0),
-              width: 1,
+              width: 0.5,
+            ),
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 2),
+            child: BottomNavigationBar(
+              currentIndex: currentIndex,
+              onTap: (index) {
+                if (index != currentIndex) {
+                  HapticFeedback.selectionClick();
+                }
+                switch (index) {
+                  case 0:
+                    context.go('/dashboard');
+                  case 1:
+                    context.go('/devices');
+                  case 2:
+                    context.go('/dosage-history');
+                  case 3:
+                    context.go('/settings');
+                }
+              },
+              items: [
+                _buildNavItem(
+                  Icons.dashboard_outlined,
+                  Icons.dashboard_rounded,
+                  'Dashboard',
+                  currentIndex == 0,
+                ),
+                _buildNavItem(
+                  Icons.devices_outlined,
+                  Icons.devices_rounded,
+                  'Devices',
+                  currentIndex == 1,
+                ),
+                _buildNavItem(
+                  Icons.history_outlined,
+                  Icons.history_rounded,
+                  'History',
+                  currentIndex == 2,
+                ),
+                _buildNavItem(
+                  Icons.settings_outlined,
+                  Icons.settings_rounded,
+                  'Settings',
+                  currentIndex == 3,
+                ),
+              ],
             ),
           ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                context.go('/dashboard');
-              case 1:
-                context.go('/devices');
-              case 2:
-                context.go('/dosage-history');
-              case 3:
-                context.go('/settings');
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded),
-              activeIcon: Icon(Icons.dashboard_rounded),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.devices_rounded),
-              activeIcon: Icon(Icons.devices_rounded),
-              label: 'Devices',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_rounded),
-              activeIcon: Icon(Icons.history_rounded),
-              label: 'History',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_rounded),
-              activeIcon: Icon(Icons.settings_rounded),
-              label: 'Settings',
-            ),
-          ],
-        ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(
+    IconData inactiveIcon,
+    IconData activeIcon,
+    String label,
+    bool isActive,
+  ) {
+    return BottomNavigationBarItem(
+      icon: AnimatedScale(
+        scale: isActive ? 1.0 : 0.9,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        child: Icon(inactiveIcon),
+      ),
+      activeIcon: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.8, end: 1.0),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.elasticOut,
+        builder: (context, scale, child) {
+          return Transform.scale(
+            scale: scale,
+            child: child,
+          );
+        },
+        child: Icon(activeIcon),
+      ),
+      label: label,
     );
   }
 }

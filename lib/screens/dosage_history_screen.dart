@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/app_providers.dart';
 import '../models/database.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/animated_list_item.dart';
 
 class DosageHistoryScreen extends ConsumerWidget {
   const DosageHistoryScreen({super.key});
@@ -14,6 +16,7 @@ class DosageHistoryScreen extends ConsumerWidget {
     final chartAsync = ref.watch(dosageChartDataProvider);
     final dateRange = ref.watch(dosageDateRangeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = AppLayout.padding(context);
 
     return RefreshIndicator(
       color: const Color(0xFF0D9488),
@@ -23,105 +26,131 @@ class DosageHistoryScreen extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Dosage History',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Track and analyze medication administration records',
-              style: TextStyle(
-                fontSize: 14,
-                color:
-                    isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Date range picker
-            _DateRangeSelector(
-              dateRange: dateRange,
-              isDark: isDark,
-              onSelect: (range) {
-                ref.read(dosageDateRangeProvider.notifier).setRange(range);
-              },
-              onClear: () {
-                ref.read(dosageDateRangeProvider.notifier).setRange(null);
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Chart
-            chartAsync.when(
-              data: (chartData) {
-                if (chartData.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                return _DosageChartWidget(
-                    data: chartData, isDark: isDark);
-              },
-              loading: () => Container(
-                height: 220,
-                decoration: BoxDecoration(
-                  color:
-                      isDark ? const Color(0xFF111827) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF1F2937)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                      color: Color(0xFF0D9488)),
-                ),
-              ),
-              error: (_, __) => const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 20),
-
-            // History list
-            historyAsync.when(
-              data: (items) {
-                if (items.isEmpty) {
-                  return _EmptyHistory(isDark: isDark);
-                }
-                return Column(
-                  children: items
-                      .map((item) =>
-                          _HistoryItem(item: item, isDark: isDark))
-                      .toList(),
-                );
-              },
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(60),
-                  child: CircularProgressIndicator(
-                      color: Color(0xFF0D9488)),
-                ),
-              ),
-              error: (e, _) => Center(
+        padding: padding,
+        child: AppLayout.constrainContent(
+          context: context,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedListItem(
+                index: 0,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: Color(0xFFEF4444), size: 48),
-                    const SizedBox(height: 8),
-                    Text('Failed to load history',
-                        style: TextStyle(
-                            color:
-                                isDark ? Colors.white : Colors.black87)),
+                    Text(
+                      'Dosage History',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Track and analyze medication administration records',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? const Color(0xFF9CA3AF)
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              // Date range picker
+              AnimatedListItem(
+                index: 1,
+                child: _DateRangeSelector(
+                  dateRange: dateRange,
+                  isDark: isDark,
+                  onSelect: (range) {
+                    ref.read(dosageDateRangeProvider.notifier).setRange(range);
+                  },
+                  onClear: () {
+                    ref.read(dosageDateRangeProvider.notifier).setRange(null);
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Chart
+              chartAsync.when(
+                data: (chartData) {
+                  if (chartData.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return AnimatedListItem(
+                    index: 2,
+                    child: _DosageChartWidget(
+                        data: chartData, isDark: isDark),
+                  );
+                },
+                loading: () => Container(
+                  height: 220,
+                  decoration: BoxDecoration(
+                    color:
+                        isDark ? const Color(0xFF111827) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF1F2937)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                        color: Color(0xFF0D9488)),
+                  ),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 20),
+
+              // History list
+              historyAsync.when(
+                data: (items) {
+                  if (items.isEmpty) {
+                    return AnimatedListItem(
+                      index: 3,
+                      child: _EmptyHistory(isDark: isDark),
+                    );
+                  }
+                  return Column(
+                    children: items
+                        .asMap()
+                        .entries
+                        .map((entry) => AnimatedListItem(
+                              index: entry.key + 3,
+                              child: _HistoryItem(
+                                  item: entry.value, isDark: isDark),
+                            ))
+                        .toList(),
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(60),
+                    child: CircularProgressIndicator(
+                        color: Color(0xFF0D9488)),
+                  ),
+                ),
+                error: (e, _) => Center(
+                  child: Column(
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: Color(0xFFEF4444), size: 48),
+                      const SizedBox(height: 8),
+                      Text('Failed to load history',
+                          style: TextStyle(
+                              color:
+                                  isDark ? Colors.white : Colors.black87)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -180,10 +209,10 @@ class _DateRangeSelector extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.calendar_today_rounded,
                     size: 18,
-                    color: const Color(0xFF0D9488),
+                    color: Color(0xFF0D9488),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -292,7 +321,7 @@ class _DosageChartWidget extends StatelessWidget {
                       final item = data[group.x.toInt()];
                       return BarTooltipItem(
                         '${item.date}\n${rodIndex == 0 ? 'Success: ${item.successful}' : 'Failed: ${item.failed}'}',
-                        TextStyle(
+                        const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
                         ),

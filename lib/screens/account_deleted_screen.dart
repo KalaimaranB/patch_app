@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../utils/responsive_layout.dart';
 
 class AccountDeletedScreen extends StatelessWidget {
   const AccountDeletedScreen({super.key});
@@ -22,7 +23,7 @@ class AccountDeletedScreen extends StatelessWidget {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppLayout.padding(context),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

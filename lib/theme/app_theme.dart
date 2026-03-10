@@ -22,6 +22,15 @@ class AppTheme {
   static const Color lightCard = Color(0xFFFFFFFF);
   static const Color lightBorder = Color(0xFFE2E8F0);  // slate-200
 
+  // Shared page transitions
+  static const PageTransitionsTheme _pageTransitionsTheme = PageTransitionsTheme(
+    builders: {
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+    },
+  );
+
   static TextTheme _textTheme(Brightness brightness) {
     final baseColor =
         brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A);
@@ -61,6 +70,8 @@ class AppTheme {
       useMaterial3: true,
       textTheme: _textTheme(Brightness.dark),
       scaffoldBackgroundColor: darkBg,
+      pageTransitionsTheme: _pageTransitionsTheme,
+      splashFactory: InkSparkle.splashFactory,
       colorScheme: const ColorScheme.dark(
         primary: primaryTeal,
         secondary: accentCyan,
@@ -91,11 +102,13 @@ class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: darkSurface,
+        backgroundColor: Colors.transparent,
         selectedItemColor: primaryTeal,
-        unselectedItemColor: Color(0xFF9CA3AF),
+        unselectedItemColor: Color(0xFF6B7280),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
+        selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -160,6 +173,8 @@ class AppTheme {
       useMaterial3: true,
       textTheme: _textTheme(Brightness.light),
       scaffoldBackgroundColor: lightBg,
+      pageTransitionsTheme: _pageTransitionsTheme,
+      splashFactory: InkSparkle.splashFactory,
       colorScheme: const ColorScheme.light(
         primary: primaryTeal,
         secondary: accentCyan,
@@ -190,11 +205,13 @@ class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: lightSurface,
+        backgroundColor: Colors.transparent,
         selectedItemColor: primaryTeal,
         unselectedItemColor: Color(0xFF94A3B8),
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
+        selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

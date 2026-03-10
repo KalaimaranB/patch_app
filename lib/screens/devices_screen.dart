@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../providers/app_providers.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/animated_list_item.dart';
+import '../widgets/pressable_card.dart';
 
 class DevicesScreen extends ConsumerWidget {
   const DevicesScreen({super.key});
@@ -10,69 +13,92 @@ class DevicesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final devicesAsync = ref.watch(devicesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = AppLayout.padding(context);
 
     return RefreshIndicator(
       color: const Color(0xFF0D9488),
       onRefresh: () async => ref.invalidate(devicesProvider),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Devices',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Manage and monitor your connected medical devices',
-              style: TextStyle(
-                fontSize: 14,
-                color:
-                    isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 24),
-            devicesAsync.when(
-              data: (devices) {
-                if (devices.isEmpty) {
-                  return _EmptyDevices(isDark: isDark);
-                }
-                return Column(
-                  children: devices
-                      .map((device) =>
-                          _DeviceCard(device: device, isDark: isDark))
-                      .toList(),
-                );
-              },
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(60),
-                  child:
-                      CircularProgressIndicator(color: Color(0xFF0D9488)),
+        padding: padding,
+        child: AppLayout.constrainContent(
+          context: context,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedListItem(
+                index: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Devices',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage and monitor your connected medical devices',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? const Color(0xFF9CA3AF)
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              error: (e, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: Color(0xFFEF4444), size: 48),
-                      const SizedBox(height: 8),
-                      Text('Failed to load devices',
-                          style: TextStyle(
-                              color:
-                                  isDark ? Colors.white : Colors.black87)),
-                    ],
+              const SizedBox(height: 24),
+              devicesAsync.when(
+                data: (devices) {
+                  if (devices.isEmpty) {
+                    return AnimatedListItem(
+                      index: 1,
+                      child: _EmptyDevices(isDark: isDark),
+                    );
+                  }
+                  return Column(
+                    children: devices
+                        .asMap()
+                        .entries
+                        .map((entry) => AnimatedListItem(
+                              index: entry.key + 1,
+                              child: PressableCard(
+                                child: _DeviceCard(
+                                    device: entry.value, isDark: isDark),
+                              ),
+                            ))
+                        .toList(),
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(60),
+                    child:
+                        CircularProgressIndicator(color: Color(0xFF0D9488)),
+                  ),
+                ),
+                error: (e, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: Color(0xFFEF4444), size: 48),
+                        const SizedBox(height: 8),
+                        Text('Failed to load devices',
+                            style: TextStyle(
+                                color:
+                                    isDark ? Colors.white : Colors.black87)),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -105,8 +131,8 @@ class _DeviceCard extends StatelessWidget {
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],

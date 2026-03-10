@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../providers/app_providers.dart';
 import '../providers/theme_provider.dart';
 import '../services/supabase_service.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/animated_list_item.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -145,24 +147,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final themeNotifier = ref.watch(themeProvider);
     final themeCtrl = ref.read(themeProvider.notifier);
 
+    final padding = AppLayout.padding(context);
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: padding,
+      child: AppLayout.constrainContent(
+        context: context,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Settings',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          AnimatedListItem(
+            index: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Settings',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Manage your account preferences and notifications',
-            style: TextStyle(
-              fontSize: 14,
-              color:
-                  isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
+                const SizedBox(height: 4),
+                Text(
+                  'Manage your account preferences and notifications',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color:
+                        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -338,6 +352,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 40),
         ],
+      ),
       ),
     );
   }

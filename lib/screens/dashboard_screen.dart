@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../providers/app_providers.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/animated_list_item.dart';
+import '../widgets/shimmer_widget.dart';
+import '../widgets/pressable_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -11,6 +15,7 @@ class DashboardScreen extends ConsumerWidget {
     final userData = ref.watch(currentUserProvider);
     final dashboardData = ref.watch(dashboardDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = AppLayout.padding(context);
 
     return RefreshIndicator(
       color: const Color(0xFF0D9488),
@@ -20,127 +25,164 @@ class DashboardScreen extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Greeting
-            userData.when(
-              data: (user) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, ${user?.displayName ?? 'Caregiver'}! 👋',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Here's an overview of your patient's medical activity.",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark
-                          ? const Color(0xFF9CA3AF)
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-              loading: () => _buildGreetingSkeleton(isDark),
-              error: (_, __) => const Text('Welcome back!'),
-            ),
-            const SizedBox(height: 24),
-
-            // Stats
-            dashboardData.when(
-              data: (data) => Column(
-                children: [
-                  // Stat cards in 2x2 grid
-                  Row(
+        padding: padding,
+        child: AppLayout.constrainContent(
+          context: context,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Greeting
+              userData.when(
+                data: (user) => AnimatedListItem(
+                  index: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: "Today's Doses",
-                          value: data.todayCount.toString(),
-                          icon: Icons.today_rounded,
-                          color: const Color(0xFF0D9488),
-                          isDark: isDark,
-                        ),
+                      Text(
+                        'Welcome back, ${user?.displayName ?? 'Caregiver'}! 👋',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'This Week',
-                          value: data.weekCount.toString(),
-                          icon: Icons.date_range_rounded,
-                          color: const Color(0xFF06B6D4),
-                          isDark: isDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Active Devices',
-                          value: data.activeDevices.toString(),
-                          icon: Icons.sensors_rounded,
-                          color: const Color(0xFF10B981),
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Total Devices',
-                          value: data.totalDevices.toString(),
-                          icon: Icons.devices_rounded,
-                          color: const Color(0xFF8B5CF6),
-                          isDark: isDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Recent Dosages
-                  _SectionHeader(title: 'Recent Activity', isDark: isDark),
-                  const SizedBox(height: 12),
-                  if (data.recentDosages.isEmpty)
-                    _EmptyState(
-                      icon: Icons.medication_rounded,
-                      title: 'No dosage records yet',
-                      subtitle:
-                          'Data will appear here once devices start logging',
-                      isDark: isDark,
-                    )
-                  else
-                    ...data.recentDosages.map(
-                        (dosage) => _DosageCard(dosage: dosage, isDark: isDark)),
-                ],
-              ),
-              loading: () => _buildStatsSkeleton(isDark),
-              error: (e, _) => Center(
-                child: Column(
-                  children: [
-                    const Icon(Icons.error_outline,
-                        color: Color(0xFFEF4444), size: 48),
-                    const SizedBox(height: 8),
-                    Text('Failed to load dashboard data',
+                      const SizedBox(height: 4),
+                      Text(
+                        "Here's an overview of your patient's medical activity.",
                         style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87)),
-                    const SizedBox(height: 4),
-                    Text(e.toString(),
-                        style: const TextStyle(
-                            color: Color(0xFF9CA3AF), fontSize: 12)),
+                          fontSize: 14,
+                          color: isDark
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                loading: () => _buildGreetingSkeleton(isDark),
+                error: (_, __) => const Text('Welcome back!'),
+              ),
+              const SizedBox(height: 24),
+
+              // Stats
+              dashboardData.when(
+                data: (data) => Column(
+                  children: [
+                    // Stat cards in 2x2 grid
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AnimatedListItem(
+                            index: 1,
+                            child: PressableCard(
+                              child: _StatCard(
+                                title: "Today's Doses",
+                                value: data.todayCount.toString(),
+                                icon: Icons.today_rounded,
+                                color: const Color(0xFF0D9488),
+                                isDark: isDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AnimatedListItem(
+                            index: 2,
+                            child: PressableCard(
+                              child: _StatCard(
+                                title: 'This Week',
+                                value: data.weekCount.toString(),
+                                icon: Icons.date_range_rounded,
+                                color: const Color(0xFF06B6D4),
+                                isDark: isDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AnimatedListItem(
+                            index: 3,
+                            child: PressableCard(
+                              child: _StatCard(
+                                title: 'Active Devices',
+                                value: data.activeDevices.toString(),
+                                icon: Icons.sensors_rounded,
+                                color: const Color(0xFF10B981),
+                                isDark: isDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AnimatedListItem(
+                            index: 4,
+                            child: PressableCard(
+                              child: _StatCard(
+                                title: 'Total Devices',
+                                value: data.totalDevices.toString(),
+                                icon: Icons.devices_rounded,
+                                color: const Color(0xFF8B5CF6),
+                                isDark: isDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Recent Dosages
+                    AnimatedListItem(
+                      index: 5,
+                      child: _SectionHeader(title: 'Recent Activity', isDark: isDark),
+                    ),
+                    const SizedBox(height: 12),
+                    if (data.recentDosages.isEmpty)
+                      AnimatedListItem(
+                        index: 6,
+                        child: _EmptyState(
+                          icon: Icons.medication_rounded,
+                          title: 'No dosage records yet',
+                          subtitle:
+                              'Data will appear here once devices start logging',
+                          isDark: isDark,
+                        ),
+                      )
+                    else
+                      ...data.recentDosages.asMap().entries.map(
+                            (entry) => AnimatedListItem(
+                              index: 6 + entry.key,
+                              child: _DosageCard(
+                                  dosage: entry.value, isDark: isDark),
+                            ),
+                          ),
                   ],
                 ),
+                loading: () => _buildStatsSkeleton(isDark),
+                error: (e, _) => Center(
+                  child: Column(
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: Color(0xFFEF4444), size: 48),
+                      const SizedBox(height: 8),
+                      Text('Failed to load dashboard data',
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87)),
+                      const SizedBox(height: 4),
+                      Text(e.toString(),
+                          style: const TextStyle(
+                              color: Color(0xFF9CA3AF), fontSize: 12)),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -150,22 +192,18 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        ShimmerWidget.rectangular(
           width: 250,
           height: 28,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          borderRadius: BorderRadius.circular(8),
+          isDark: isDark,
         ),
         const SizedBox(height: 8),
-        Container(
+        ShimmerWidget.rectangular(
           width: 300,
           height: 16,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(6),
-          ),
+          borderRadius: BorderRadius.circular(6),
+          isDark: isDark,
         ),
       ],
     );
@@ -223,8 +261,8 @@ class _StatCard extends StatelessWidget {
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -445,7 +483,8 @@ class _SkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
+      padding: const EdgeInsets.all(18),
+      height: 130,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF111827) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -453,11 +492,30 @@ class _SkeletonCard extends StatelessWidget {
           color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0),
         ),
       ),
-      child: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: const Color(0xFF0D9488).withValues(alpha: 0.5),
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ShimmerWidget.rectangular(
+            width: 40,
+            height: 40,
+            borderRadius: BorderRadius.circular(10),
+            isDark: isDark,
+          ),
+          const Spacer(),
+          ShimmerWidget.rectangular(
+            width: 60,
+            height: 24,
+            borderRadius: BorderRadius.circular(6),
+            isDark: isDark,
+          ),
+          const SizedBox(height: 6),
+          ShimmerWidget.rectangular(
+            width: 80,
+            height: 12,
+            borderRadius: BorderRadius.circular(4),
+            isDark: isDark,
+          ),
+        ],
       ),
     );
   }

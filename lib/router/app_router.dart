@@ -34,15 +34,24 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => _buildFadePage(
+        state: state,
+        child: const LoginScreen(),
+      ),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => _buildSlidePage(
+        state: state,
+        child: const RegisterScreen(),
+      ),
     ),
     GoRoute(
       path: '/account-deleted',
-      builder: (context, state) => const AccountDeletedScreen(),
+      pageBuilder: (context, state) => _buildFadePage(
+        state: state,
+        child: const AccountDeletedScreen(),
+      ),
     ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
@@ -50,35 +59,88 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: DashboardScreen(),
+          pageBuilder: (context, state) => _buildFadePage(
+            state: state,
+            child: const DashboardScreen(),
           ),
         ),
         GoRoute(
           path: '/devices',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: DevicesScreen(),
+          pageBuilder: (context, state) => _buildFadePage(
+            state: state,
+            child: const DevicesScreen(),
           ),
         ),
         GoRoute(
           path: '/dosage-history',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: DosageHistoryScreen(),
+          pageBuilder: (context, state) => _buildFadePage(
+            state: state,
+            child: const DosageHistoryScreen(),
           ),
         ),
         GoRoute(
           path: '/settings',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: SettingsScreen(),
+          pageBuilder: (context, state) => _buildFadePage(
+            state: state,
+            child: const SettingsScreen(),
           ),
         ),
         GoRoute(
           path: '/help',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: HelpScreen(),
+          pageBuilder: (context, state) => _buildFadePage(
+            state: state,
+            child: const HelpScreen(),
           ),
         ),
       ],
     ),
   ],
 );
+
+/// Smooth fade transition for tab switches and general navigation.
+CustomTransitionPage<void> _buildFadePage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+        child: child,
+      );
+    },
+  );
+}
+
+/// Slide-up transition for auth flow navigation (login → register).
+CustomTransitionPage<void> _buildSlidePage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 350),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.15),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+    },
+  );
+}
